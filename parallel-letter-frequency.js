@@ -1,40 +1,26 @@
-export function countFrequency(texts) {
-  const splitTexts = texts.map(text => [...text])
+export async function countFrequency(texts) {
+  const letterFrequencies = await calculateCharacterFrequencies(texts)
+  const result = mergeCharacterFrequencies(letterFrequencies)
 
-  const promises = splitTexts.map(splitText => {
-    return new Promise((resolve, reject) => {
-      try {
-        const frequency = splitText.reduce((acc, char) => {
-          acc[char] = (acc[char] || 0) + 1
-          return acc
-        }, {})
-        resolve(frequency)
-      } catch (error) {
-        reject(error)
-      }
-    })
-  })
-
-  return Promise.all(promises)
-    .then(results => {
-      const totalFrequency = results.flatMap(Object.entries)
-        .reduce((acc, [char, count]) => {
-          acc[char] = (acc[char] || 0) + count
-          return acc
-        }, {})
-      return totalFrequency
-    })
-    .catch(error => {
-      console.error('Error in countFrequency:', error)
-      throw error
-    })
+  return result
 }
 
-const texts = ['Hello, World!', 'This is a test text']
-countFrequency(texts)
-  .then(result => {
-    console.log(result)
-  })
-  .catch(error => {
-    console.error('Error in countFrequency:', error)
-  })
+async function textFrequency(text) {
+  return [...text].reduce((charCount, char) => {
+    charCount[char] = (charCount[char] || 0) + 1
+    return charCount
+  }, {})
+}
+
+async function calculateCharacterFrequencies(texts) {
+  const promises = texts.map((text) => textFrequency(text))
+  return await Promise.all(promises)
+}
+
+function mergeCharacterFrequencies(frequencies) {
+  return frequencies.flatMap(Object.entries)
+    .reduce((acc, [char, count]) => {
+      acc[char] = (acc[char] || 0) + count
+      return acc
+    }, {})
+}
